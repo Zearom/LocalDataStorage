@@ -102,9 +102,7 @@ var LocalDataStorage = function (configuration) {
 		return numberValue;
 	};
 	this.validateDefaultValueBoolean = function (value) {
-		if (typeof(value) === "boolean") {
-			
-		} else if (typeof(value) === "string") {
+		if (typeof(value) === "string") {
 			if (value.toLowerCase() === "true") {
 				value = true;
 			} else if (value.toLowerCase() === "false") {
