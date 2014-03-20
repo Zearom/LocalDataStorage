@@ -15,6 +15,10 @@ var LocalDataStorage = function (configuration) {
 	this.isDebug = function () {
 		return debug;
 	};
+	
+	this.getRawRows = function () {
+		return rows;
+	};
 
 	//SET
 	this.setDebug = function (value) {
@@ -46,11 +50,11 @@ var LocalDataStorage = function (configuration) {
 		if ((configuration.defaultvalue !== undefined) && (configuration.defaultvalue !== null)) {
 			
 			if (configuration.type === "string") {
-				configuration.defaultvalue = this.validateDefaultValueString(configuration.defaultvalue);
+				configuration.defaultvalue = this.validateValueString(configuration.defaultvalue);
 			} else if (configuration.type === "number") {
-				configuration.defaultvalue = this.validateDefaultValueNumber(configuration.defaultvalue);
+				configuration.defaultvalue = this.validateValueNumber(configuration.defaultvalue);
 			} else if (configuration.type === "boolean") {
-				configuration.defaultvalue = this.validateDefaultValueBoolean(configuration.defaultvalue);
+				configuration.defaultvalue = this.validateValueBoolean(configuration.defaultvalue);
 			}
 		} else {
 			configuration.defaultvalue = null;
@@ -88,7 +92,13 @@ var LocalDataStorage = function (configuration) {
 				var currentColumn = structure[i];
 				
 				if (row[currentColumn.name] !== undefined) {
-					rawDataRow[currentColumn.name] = row[currentColumn.name]; 
+					if (currentColumn.type === "string") {
+						rawDataRow[currentColumn.name] = this.validateValueString(row[currentColumn.name]);
+					} else if (currentColumn.type === "number") {
+						rawDataRow[currentColumn.name] = this.validateValueNumber(row[currentColumn.name]);
+					} else if (currentColumn.type === "boolean") {
+						rawDataRow[currentColumn.name] = this.validateValueBoolean(row[currentColumn.name]);
+					}
 				} else {
 					if ((currentColumn.nullable === false) && (configuration.defaultvalue === null)) {
 						console.error("Column \"" + currentColumn.name + "\" can not be null");
@@ -102,22 +112,23 @@ var LocalDataStorage = function (configuration) {
 		if (debug) {
 			console.info(rawDataRow);
 		}
+		
+		rows.push(rawDataRow);
+		
 		return rawDataRow;
 	};
 	
-	this.validateDefaultValueString = function (value) {
+	this.validateValueString = function (value) {
 		return String(value);
 	};
-	this.validateDefaultValueNumber = function (value) {
-		console.log(value);
+	this.validateValueNumber = function (value) {
 		var numberValue = parseInt(value);
 		if (isNaN(numberValue)) {
 			numberValue = 0;
 		}
-		console.log(numberValue);
 		return numberValue;
 	};
-	this.validateDefaultValueBoolean = function (value) {
+	this.validateValueBoolean = function (value) {
 		if (typeof(value) === "string") {
 			if (value.toLowerCase() === "true") {
 				value = true;
