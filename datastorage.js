@@ -32,9 +32,7 @@ var DataStorage = function (configuration) {
 			configuration.type = "string";
 		}
 		
-		if ((configuration.type === "string") || (configuration.type === "number") || (configuration.type === "boolean")) {
-			
-		} else {
+		if ((configuration.type !== "string") && (configuration.type !== "number") && (configuration.type !== "boolean")) {
 			console.error("Column \"" + configuration.name + "\" does not support datatype \"" + configuration.type + "\"");
 			return null;
 		}
