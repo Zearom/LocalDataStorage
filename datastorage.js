@@ -1,12 +1,9 @@
-var DataStorage = function (configuration) {
+var LocalDataStorage = function (configuration) {
 	var id = "";
 	var structure = [];
 	var rows = [];
+	var debug = false;
 	//GET
-	this.getType = function () {
-		return "system.liehrit.data.storage";
-	};
-	
 	this.getId = function () {
 		return id;
 	};
@@ -14,9 +11,15 @@ var DataStorage = function (configuration) {
 	this.getStructure = function () {
 		return structure;
 	};
+	
+	this.isDebug = function () {
+		return debug;
+	};
 
 	//SET
-	
+	this.setDebug = function (value) {
+		debug = value;
+	};
 	//Functions
 	this.addColumn = function (configuration) {
 		for (var i = 0; i < structure.length;i++) {
