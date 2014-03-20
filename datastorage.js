@@ -22,6 +22,9 @@ var LocalDataStorage = function (configuration) {
 	};
 	//Functions
 	this.addColumn = function (configuration) {
+		if (debug) {
+			console.info("LocalDataStorage.addColumn()");
+		}
 		for (var i = 0; i < structure.length;i++) {
 			var currentColumn = structure[i];
 			
@@ -63,12 +66,22 @@ var LocalDataStorage = function (configuration) {
 		
 		
 		structure.push({"name":configuration.name, "type": configuration.type, "defaultvalue":configuration.defaultvalue, "nullable":configuration.nullable});
-		
+		if (debug) {
+			console.info("Column \"" + configuration.name + "\" with type \"" + configuration.type + "\" added successfully");
+		}
 		return true;
 	};
 	
 	this.addRow = function (row) {
+		if (debug) {
+			console.info("LocalDataStorage.addRow()");
+		}
+		
 		var rawDataRow = {};
+		
+		//creating default values
+		rawDataRow.LDS_ROWGUID = this.createRowGuid();
+		rawDataRow.LDS_ROWVERSION = this.getCurrentRowVersion();
 		
 		if ((row !== undefined) && (row !== null)) {
 			for (var i = 0;i < structure.length; i++) {
@@ -86,6 +99,9 @@ var LocalDataStorage = function (configuration) {
 			}
 		}
 		
+		if (debug) {
+			console.info(rawDataRow);
+		}
 		return rawDataRow;
 	};
 	
@@ -124,16 +140,32 @@ var LocalDataStorage = function (configuration) {
 		return value;
 	};
 	
-	this.addRow = function(row) {
-		
+	this.getCurrentRowVersion = function () {
+		//NOT YET IMPLEMENTED
+		return 0;
+	};
+	
+	this.createRowGuid = function ()
+	{
+	    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	        var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+	        return v.toString(16);
+	    });
 	};
 	
 	//INIT
 	this.initiate = function (configuration) {
+
 		if ((configuration !== undefined) && (configuration !== null)) {
 			if ((configuration.id !== undefined) && (configuration.id !== null)) {
 				id = configuration.id;
 			}
+			if ((configuration.debug !== undefined) && (configuration.debug !== null)) {
+				debug = configuration.debug;
+			}
+		}
+		if (debug) {
+			console.info("LocalDataStorage.initiate()");
 		}
 	};
 	

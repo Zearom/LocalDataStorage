@@ -4,6 +4,19 @@
 	<script src="../../datastorage.js"></script>
 	<script type="text/javascript">
 		var db = new LocalDataStorage({debug:true});
+
+		//creating Structure
+		db.addColumn({name:"id", type:"number", nullable:false});
+		db.addColumn({name:"name", type:"string", nullable:true});
+		db.addColumn({name:"visible", type:"boolean", nullable:false, defaultvalue:true});
+		
+		//add some rows
+		var i = 0;
+		db.addRow({id:i, name:"test" + i++, visible:true});
+		db.addRow({id:i, name:"test" + i++, visible:true});
+		db.addRow({id:i, name:"test" + i++, visible:true});
+		
+		
 	</script>
 </head>
 <body>
