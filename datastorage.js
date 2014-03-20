@@ -29,6 +29,17 @@ var LocalDataStorage = function (configuration) {
 		if (debug) {
 			console.info("LocalDataStorage.addColumn()");
 		}
+		
+		if ((configuration.name === undefined) || (configuration.name === null)) {
+			console.error("Column name can not be null");
+			return null;
+		}
+		
+		if (configuration.name.substring(0,4) === "LDS_") {
+			console.error("Columnprefix \"LDS_\" is reserved for internal functions");
+			return null;
+		}
+		
 		for (var i = 0; i < structure.length;i++) {
 			var currentColumn = structure[i];
 			
@@ -118,9 +129,30 @@ var LocalDataStorage = function (configuration) {
 		return rawDataRow;
 	};
 	
+	this.select = function () {
+		return this.selectRow();
+	};
+	
+	this.selectRow = function () {
+		
+	};
+	
+	this.update = function () {
+		return this.updateRow();
+	};
+	
+	this.updateRow = function () {
+		
+	};
+	
+	this.deleteRow = function () {
+		
+	};
+	
 	this.validateValueString = function (value) {
 		return String(value);
 	};
+	
 	this.validateValueNumber = function (value) {
 		var numberValue = parseInt(value);
 		if (isNaN(numberValue)) {
@@ -128,6 +160,7 @@ var LocalDataStorage = function (configuration) {
 		}
 		return numberValue;
 	};
+	
 	this.validateValueBoolean = function (value) {
 		if (typeof(value) === "string") {
 			if (value.toLowerCase() === "true") {
