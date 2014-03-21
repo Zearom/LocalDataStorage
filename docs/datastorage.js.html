@@ -35,6 +35,7 @@ function LocalDataStorage (configuration) {
 	var structure = [];
 	var rows = [];
 	var debug = false;
+	
 	//GET
 	this.getId = function () {
 		return id;
@@ -56,7 +57,8 @@ function LocalDataStorage (configuration) {
 	this.setDebug = function (value) {
 		debug = value;
 	};
-	//Functions
+	
+	//Public Functions
 	this.addColumn = function (configuration) {
 		if (debug) {
 			console.info("LocalDataStorage.addColumn()");
@@ -161,6 +163,12 @@ function LocalDataStorage (configuration) {
 		return rawDataRow;
 	};
 	
+	/** Select-Function
+	 * @param {function} selector - Function for selecting specific datarow
+	 * @param {array} sort - Function for selecting specific datarow
+	 * @param {number} limit - Function for selecting specific datarow
+	 * 
+	 * */
 	this.select = function (selector, sort, limit) {
 		return this.selectRow(selector, sort, limit);
 	};
@@ -190,11 +198,21 @@ function LocalDataStorage (configuration) {
 		}
 		
 		//Sort
-		sort = [{name:"name", direction:"ASC"}, {name:"visible", direction:"ASC"}];
+		//sort = [{name:"name", direction:"ASC"}, {name:"visible", direction:"ASC"}];
 		
-		tmpResultSet.sort(function (a, b){
-			return sortRow(a, b, sort, 0);
-		});
+		if ((sort !== undefined) &amp;&amp; (sort !== null)) {
+			if (!isArray(sort)) {
+				var newSort = [];
+				newSort.push(sort);
+				sort = newSort;
+			}
+			
+			console.log(sort);
+			
+			tmpResultSet.sort(function (a, b){
+				return sortRow(a, b, sort, 0);
+			});
+		}
 		
 		//Creating the result
 		for (var i = 0; i &lt; tmpResultSet.length; i++) {
@@ -203,33 +221,7 @@ function LocalDataStorage (configuration) {
 		
 		return resultSet;
 	};
-	
-	function sortRow(a, b, sort, sortIndex) {
-		var currentSort = sort[sortIndex];
-	
-		if (((currentSort.direction.toUpperCase() === "ASC") &amp;&amp; (a[currentSort.name] &lt; b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") &amp;&amp; (a[currentSort.name] > b[currentSort.name]))){
-			return -1;
-		} else if (((currentSort.direction.toUpperCase() === "ASC") &amp;&amp; (a[currentSort.name] > b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") &amp;&amp; (a[currentSort.name] &lt; b[currentSort.name]))) {
-			return 1;
-		} else {
-			if ((sortIndex+1) &lt; sort.length) {
-				return sortRow(a, b, sort, (sortIndex+1));	
-			} else {
-				return 0;
-			}
-			
-		}
-	}
-	
-	function validateSelector(row, selector) {
-		if ((selector === undefined) || (selector === null) || (typeof(selector) !== "function")) {
-			return true;
-		} else {
-			var result = selector.call(row);
-			return result;
-		}
-	}
-	
+		
 	this.update = function () {
 		return this.updateRow();
 	};
@@ -241,21 +233,6 @@ function LocalDataStorage (configuration) {
 	this.deleteRow = function () {
 		
 	};
-	
-	function cloneRow(rawDataRow, structure) {
-		var result = {};
-		
-		for (var i = 0; i &lt; structure.length; i++) {
-			var column = structure[i];
-			
-			if (column.type !== "function") {
-				result[column.name] = rawDataRow[column.name];	
-			}
-			
-		}
-		
-		return result;
-	}
 	
 	this.validateValueString = function (value) {
 		return String(value);
@@ -305,6 +282,55 @@ function LocalDataStorage (configuration) {
 		return _p8() + _p8(true) + _p8(true) + _p8();
 	};
 	
+	// Private functions
+	function validateSelector(row, selector) {
+		if ((selector === undefined) || (selector === null) || (typeof(selector) !== "function")) {
+			return true;
+		} else {
+			var result = selector.call(row);
+			return result;
+		}
+	}
+	
+	function cloneRow(rawDataRow, structure) {
+		var result = {};
+		
+		for (var i = 0; i &lt; structure.length; i++) {
+			var column = structure[i];
+			
+			if (column.type !== "function") {
+				result[column.name] = rawDataRow[column.name];	
+			}
+			
+		}
+		
+		return result;
+	}
+	
+	function sortRow(a, b, sort, sortIndex) {
+		var currentSort = sort[sortIndex];
+	
+		if (((currentSort.direction.toUpperCase() === "ASC") &amp;&amp; (a[currentSort.name] &lt; b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") &amp;&amp; (a[currentSort.name] > b[currentSort.name]))){
+			return -1;
+		} else if (((currentSort.direction.toUpperCase() === "ASC") &amp;&amp; (a[currentSort.name] > b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") &amp;&amp; (a[currentSort.name] &lt; b[currentSort.name]))) {
+			return 1;
+		} else {
+			if ((sortIndex+1) &lt; sort.length) {
+				return sortRow(a, b, sort, (sortIndex+1));	
+			} else {
+				return 0;
+			}
+		}
+	}
+	
+	function isArray(value) {
+		if (Object.prototype.toString.call(value) === '[object Array]' ) {
+		    return true;
+		} else {
+			return false;
+		}
+	}
+	
 	//INIT
 	this.initiate = function (configuration) {
 		if ((configuration !== undefined) &amp;&amp; (configuration !== null)) {
@@ -338,7 +364,7 @@ function LocalDataStorage (configuration) {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Mar 21 2014 15:27:30 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Mar 21 2014 15:47:42 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
