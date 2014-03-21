@@ -1,4 +1,31 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: datastorage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: datastorage.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Defines an instance of the LocalDataStorage Class.  
  * @constructor
  * @param {string} configuration - Storage-Configuration
@@ -45,7 +72,7 @@ function LocalDataStorage (configuration) {
 			return null;
 		}
 		
-		for (var i = 0; i < structure.length;i++) {
+		for (var i = 0; i &lt; structure.length;i++) {
 			var currentColumn = structure[i];
 			
 			if (currentColumn.name === configuration.name) {
@@ -58,12 +85,12 @@ function LocalDataStorage (configuration) {
 			configuration.type = "string";
 		}
 		
-		if ((configuration.type !== "string") && (configuration.type !== "number") && (configuration.type !== "boolean")) {
+		if ((configuration.type !== "string") &amp;&amp; (configuration.type !== "number") &amp;&amp; (configuration.type !== "boolean")) {
 			console.error("Column \"" + configuration.name + "\" does not support datatype \"" + configuration.type + "\"");
 			return null;
 		}
 		
-		if ((configuration.defaultvalue !== undefined) && (configuration.defaultvalue !== null)) {
+		if ((configuration.defaultvalue !== undefined) &amp;&amp; (configuration.defaultvalue !== null)) {
 			
 			if (configuration.type === "string") {
 				configuration.defaultvalue = this.validateValueString(configuration.defaultvalue);
@@ -76,8 +103,8 @@ function LocalDataStorage (configuration) {
 			configuration.defaultvalue = null;
 		}
 		
-		if ((configuration.nullable !== undefined) && (configuration.nullable !== null)) {
-			if ((configuration.nullable !== true) && (configuration.nullable !== false)) {
+		if ((configuration.nullable !== undefined) &amp;&amp; (configuration.nullable !== null)) {
+			if ((configuration.nullable !== true) &amp;&amp; (configuration.nullable !== false)) {
 				configuration.nullable = true;
 			}
 		} else {
@@ -103,8 +130,8 @@ function LocalDataStorage (configuration) {
 		rawDataRow.LDS_ROWGUID = this.createRowGuid();
 		rawDataRow.LDS_ROWVERSION = this.getCurrentRowVersion();
 		
-		if ((row !== undefined) && (row !== null)) {
-			for (var i = 0;i < structure.length; i++) {
+		if ((row !== undefined) &amp;&amp; (row !== null)) {
+			for (var i = 0;i &lt; structure.length; i++) {
 				var currentColumn = structure[i];
 				
 				if (row[currentColumn.name] !== undefined) {
@@ -116,7 +143,7 @@ function LocalDataStorage (configuration) {
 						rawDataRow[currentColumn.name] = this.validateValueBoolean(row[currentColumn.name]);
 					}
 				} else {
-					if ((currentColumn.nullable === false) && (configuration.defaultvalue === null)) {
+					if ((currentColumn.nullable === false) &amp;&amp; (configuration.defaultvalue === null)) {
 						console.error("Column \"" + currentColumn.name + "\" can not be null");
 					} else {
 						rawDataRow[currentColumn.name] = configuration.defaultvalue;
@@ -139,67 +166,23 @@ function LocalDataStorage (configuration) {
 	};
 	
 	this.selectRow = function (selector, sort, limit) {
-		var remainingRowLimit = 0;
 		var resultSet = [];
-		var tmpResultSet = [];
-		
-		if ((limit === undefined) || (limit === null)) {
-			limit = 0;
-		}
-		
-		
-		//Selecting
-		for (var i = 0; i < rows.length; i++) {
+		for (var i = 0; i &lt; rows.length; i++) {
 			var currentRow = rows[i];
 			
 			if (validateSelector(currentRow, selector)) {
-				if ((limit === 0) || (remainingRowLimit < limit)) {
-					tmpResultSet.push(currentRow);
-					if (limit > 0) {
-						remainingRowLimit++;
-					}
-				}
+				resultSet.push(cloneRow(currentRow, structure));
 			}
-		}
-		
-		//Sort
-		sort = [{name:"name", direction:"ASC"}, {name:"visible", direction:"ASC"}];
-		
-		tmpResultSet.sort(function (a, b){
-			return sortRow(a, b, sort, 0);
-		});
-		
-		//Creating the result
-		for (var i = 0; i < tmpResultSet.length; i++) {
-			resultSet.push(cloneRow(tmpResultSet[i], structure));
 		}
 		
 		return resultSet;
 	};
 	
-	function sortRow(a, b, sort, sortIndex) {
-		var currentSort = sort[sortIndex];
-	
-		if (((currentSort.direction.toUpperCase() === "ASC") && (a[currentSort.name] < b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") && (a[currentSort.name] > b[currentSort.name]))){
-			return -1;
-		} else if (((currentSort.direction.toUpperCase() === "ASC") && (a[currentSort.name] > b[currentSort.name])) || ((currentSort.direction.toUpperCase() === "DESC") && (a[currentSort.name] < b[currentSort.name]))) {
-			return 1;
-		} else {
-			if ((sortIndex+1) < sort.length) {
-				return sortRow(a, b, sort, (sortIndex+1));	
-			} else {
-				return 0;
-			}
-			
-		}
-	}
-	
 	function validateSelector(row, selector) {
-		if ((selector === undefined) || (selector === null) || (typeof(selector) !== "function")) {
-			return true;
+		if ((selector === undefined) || (selector === null)) {
+			return true;	
 		} else {
-			var result = selector.call(row);
-			return result;
+			return true;
 		}
 	}
 	
@@ -218,13 +201,10 @@ function LocalDataStorage (configuration) {
 	function cloneRow(rawDataRow, structure) {
 		var result = {};
 		
-		for (var i = 0; i < structure.length; i++) {
+		for (var i = 0; i &lt; structure.length; i++) {
 			var column = structure[i];
 			
-			if (column.type !== "function") {
-				result[column.name] = rawDataRow[column.name];	
-			}
-			
+			result[column.name] = rawDataRow[column.name];
 		}
 		
 		return result;
@@ -280,11 +260,11 @@ function LocalDataStorage (configuration) {
 	
 	//INIT
 	this.initiate = function (configuration) {
-		if ((configuration !== undefined) && (configuration !== null)) {
-			if ((configuration.id !== undefined) && (configuration.id !== null)) {
+		if ((configuration !== undefined) &amp;&amp; (configuration !== null)) {
+			if ((configuration.id !== undefined) &amp;&amp; (configuration.id !== null)) {
 				id = configuration.id;
 			}
-			if ((configuration.debug !== undefined) && (configuration.debug !== null)) {
+			if ((configuration.debug !== undefined) &amp;&amp; (configuration.debug !== null)) {
 				debug = configuration.debug;
 			}
 		}
@@ -295,3 +275,26 @@ function LocalDataStorage (configuration) {
 	
 	this.initiate(configuration);
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="LocalDataStorage.html">LocalDataStorage</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Mar 21 2014 13:12:35 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

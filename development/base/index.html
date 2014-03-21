@@ -8,16 +8,18 @@
 		//creating Structure
 		db.addColumn({name:"id", type:"number", nullable:false});
 		db.addColumn({name:"name", type:"string", nullable:true});
+		db.addColumn({name:"name2", type:"string", nullable:true});
 		db.addColumn({name:"visible", type:"boolean", nullable:false, defaultvalue:true});
 		
 		//add some rows
 		var i = 0;
-		db.addRow({id:i, name:"test" + i++, visible:true});
-		db.addRow({id:i, name:"test" + i++, visible:true});
-		db.addRow({id:i, name:"test" + i++, visible:true});
-		db.addRow({id:i, name:i++, visible:"true"});
+		db.addRow({id:i++, name:"Liehr", name2:"Sascha", visible:true});
+		db.addRow({id:i++, name:"Liehr", name2:"Dominik", visible:false});
+		//db.addRow({id:i, name:"test3", visible:true});
+		//db.addRow({id:i, name:"test2", visible:true});
+		//db.addRow({id:i, name:"test1", visible:"true"});
 		
-		
+		console.log(db.select());
 	</script>
 </head>
 <body>
