@@ -178,8 +178,9 @@ function LocalDataStorage (configuration) {
 				newSort.push(sort);
 				sort = newSort;
 			}
-			
-			console.log(sort);
+			if (debug) {
+				console.log(sort);
+			}
 			
 			tmpResultSet.sort(function (a, b){
 				return sortRow(a, b, sort, 0);
@@ -187,24 +188,75 @@ function LocalDataStorage (configuration) {
 		}
 		
 		//Creating the result
-		for (var i = 0; i < tmpResultSet.length; i++) {
-			resultSet.push(cloneRow(tmpResultSet[i], structure));
+		for (var j = 0; j < tmpResultSet.length; j++) {
+			resultSet.push(cloneRow(tmpResultSet[j], structure));
 		}
 		
 		return resultSet;
 	};
 		
-	this.update = function () {
-		return this.updateRow();
+	this.update = function (selector, data) {
+		return this.updateRow(selector, data);
 	};
 	
-	this.updateRow = function () {
+	this.updateRow = function (selector, data) {
+		if (debug) {
+			console.info("LocalDataStorage.updateRow()");
+		}
 		
+		var rowList = getRowIndexListBySelector(selector);
+		var updatedRowCount = 0;
+		
+		for (var i = 0; i < rowList.length; i++) {
+			var rowUpdated = false;
+			for (var j = 0;j < structure.length; j++) {
+				var dataValue = data[structure[j].name];
+				var currentColumn = structure[j];
+				
+				if (dataValue !== undefined) {
+					if (dataValue === null) {
+						if (structure[j].nullable) {
+							rows[i][structure[j].name] = null;
+							rowUpdated = true;
+						} else {
+							console.error("Column \"" + currentColumn.name + "\" can not be null");
+						}
+					} else if (currentColumn.type === "string") {
+						rows[i][structure[j].name] = this.validateValueString(dataValue);
+						rowUpdated = true;
+					} else if (currentColumn.type === "number") {
+						rows[i][structure[j].name] = this.validateValueNumber(dataValue);
+						rowUpdated = true;
+					} else if (currentColumn.type === "boolean") {
+						rows[i][structure[j].name] = this.validateValueBoolean(dataValue);
+						rowUpdated = true;
+					}
+				}
+			}
+			
+			if (rowUpdated) {
+				rows[i].LDS_ROWVERSION = this.getCurrentRowVersion(true);
+				updatedRowCount++;
+			}
+		}
+		return updatedRowCount;
 	};
 	
 	this.deleteRow = function () {
 		
 	};
+	
+	function getRowIndexListBySelector(selector) {
+		var rowList = [];
+		
+		for (var i = 0; i < rows.length; i++) {
+			if (validateSelector(rows[i], selector)) {
+				rowList.push(i);
+			}
+		}
+		
+		return rowList;
+	}
 	
 	this.validateValueString = function (value) {
 		return String(value);
@@ -241,8 +293,11 @@ function LocalDataStorage (configuration) {
 		return value;
 	};
 	
-	this.getCurrentRowVersion = function () {
+	this.getCurrentRowVersion = function (increase) {
 		//NOT YET IMPLEMENTED
+		if (increase) {
+			
+		}
 		return 0;
 	};
 	
@@ -271,7 +326,7 @@ function LocalDataStorage (configuration) {
 			var column = structure[i];
 			
 			if (column.type !== "function") {
-				result[column.name] = rawDataRow[column.name];	
+				result[column.name] = rawDataRow[column.name];
 			}
 			
 		}
@@ -288,7 +343,7 @@ function LocalDataStorage (configuration) {
 			return 1;
 		} else {
 			if ((sortIndex+1) < sort.length) {
-				return sortRow(a, b, sort, (sortIndex+1));	
+				return sortRow(a, b, sort, (sortIndex+1));
 			} else {
 				return 0;
 			}
@@ -297,7 +352,7 @@ function LocalDataStorage (configuration) {
 	
 	function isArray(value) {
 		if (Object.prototype.toString.call(value) === '[object Array]' ) {
-		    return true;
+			return true;
 		} else {
 			return false;
 		}
