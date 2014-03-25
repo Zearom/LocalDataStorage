@@ -103,7 +103,8 @@ function LocalDataStorage (configuration) {
 		
 		//creating default values
 		rawDataRow.LDS_ROWGUID = this.createRowGuid();
-		rawDataRow.LDS_ROWVERSION = this.getCurrentRowVersion();
+		rawDataRow.LDS_ROWVERSION = this.getCurrentRowVersion(true);
+		rawDataRow.LDS_DELETED = false;
 		
 		if ((row !== undefined) && (row !== null)) {
 			for (var i = 0;i < structure.length; i++) {
@@ -147,30 +148,17 @@ function LocalDataStorage (configuration) {
 	};
 	
 	this.selectRow = function (selector, sort, limit) {
-		var remainingRowLimit = 0;
 		var resultSet = [];
 		var tmpResultSet = [];
 		
-		if ((limit === undefined) || (limit === null)) {
-			limit = 0;
-		}
+		limit = limit || 0;
 		
 		//Selecting
-		for (var i = 0; i < rows.length; i++) {
-			var currentRow = rows[i];
-			
-			if (validateSelector(currentRow, selector)) {
-				if ((limit === 0) || (remainingRowLimit < limit)) {
-					tmpResultSet.push(currentRow);
-					if (limit > 0) {
-						remainingRowLimit++;
-					}
-				}
-			}
-		}
+		var rowList = getRowIndexListBySelector(selector);
 		
-		//Sort
-		//sort = [{name:"name", direction:"ASC"}, {name:"visible", direction:"ASC"}];
+		for (var i = 0; i < rowList.length; i++) {
+			tmpResultSet.push(rows[rowList[i]]);
+		}
 		
 		if ((sort !== undefined) && (sort !== null)) {
 			if (!isArray(sort)) {
@@ -189,7 +177,9 @@ function LocalDataStorage (configuration) {
 		
 		//Creating the result
 		for (var j = 0; j < tmpResultSet.length; j++) {
-			resultSet.push(cloneRow(tmpResultSet[j], structure));
+			if ((limit === 0) || (j < limit)) {
+				resultSet.push(cloneRow(tmpResultSet[j], structure));
+			}
 		}
 		
 		return resultSet;
@@ -204,6 +194,10 @@ function LocalDataStorage (configuration) {
 			console.info("LocalDataStorage.updateRow()");
 		}
 		
+		if (!data) {
+			throw new Error("data can not be null");
+		}
+		
 		var rowList = getRowIndexListBySelector(selector);
 		var updatedRowCount = 0;
 		
@@ -216,42 +210,63 @@ function LocalDataStorage (configuration) {
 				if (dataValue !== undefined) {
 					if (dataValue === null) {
 						if (structure[j].nullable) {
-							rows[i][structure[j].name] = null;
+							rows[rowList[i]][structure[j].name] = null;
 							rowUpdated = true;
 						} else {
 							console.error("Column \"" + currentColumn.name + "\" can not be null");
 						}
 					} else if (currentColumn.type === "string") {
-						rows[i][structure[j].name] = this.validateValueString(dataValue);
+						rows[rowList[i]][structure[j].name] = this.validateValueString(dataValue);
 						rowUpdated = true;
 					} else if (currentColumn.type === "number") {
-						rows[i][structure[j].name] = this.validateValueNumber(dataValue);
+						rows[rowList[i]][structure[j].name] = this.validateValueNumber(dataValue);
 						rowUpdated = true;
 					} else if (currentColumn.type === "boolean") {
-						rows[i][structure[j].name] = this.validateValueBoolean(dataValue);
+						rows[rowList[i]][structure[j].name] = this.validateValueBoolean(dataValue);
 						rowUpdated = true;
 					}
 				}
 			}
 			
 			if (rowUpdated) {
-				rows[i].LDS_ROWVERSION = this.getCurrentRowVersion(true);
+				rows[rowList[i]].LDS_ROWVERSION = this.getCurrentRowVersion(true);
 				updatedRowCount++;
 			}
 		}
 		return updatedRowCount;
 	};
 	
-	this.deleteRow = function () {
+	this.deleteRow = function (selector) {
+		if (debug) {
+			console.info("LocalDataStorage.deleteRow()");
+		}
 		
+		var rowList = getRowIndexListBySelector(selector);
+		var deletedRowCount = 0;
+		
+		for (var i = 0; i < rowList.length; i++) {
+			var deletedRow = {};
+			
+			deletedRow.LDS_ROWGUID = rows[rowList[i]].LDS_ROWGUID;
+			deletedRow.LDS_ROWVERSION = this.getCurrentRowVersion(true);
+			deletedRow.LDS_DELETED = true;
+			
+			rows[rowList[i]] = deletedRow;
+			
+			deletedRowCount++;
+		}
+		
+		return deletedRowCount;
 	};
 	
 	function getRowIndexListBySelector(selector) {
 		var rowList = [];
 		
 		for (var i = 0; i < rows.length; i++) {
-			if (validateSelector(rows[i], selector)) {
-				rowList.push(i);
+			if (rows[i].LDS_DELETED === false) {
+				if (validateSelector(rows[i], selector)) {
+					rowList.push(i);
+				}
 			}
 		}
 		
