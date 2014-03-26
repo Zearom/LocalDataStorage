@@ -119,15 +119,15 @@ function LocalDataStorage (configuration) {
 						rawDataRow[currentColumn.name] = this.validateValueBoolean(row[currentColumn.name]);
 					}
 				} else {
-					if ((currentColumn.nullable === false) && (configuration.defaultvalue === null)) {
+					if ((currentColumn.nullable === false) && (currentColumn.defaultvalue === null)) {
 						console.error("Column \"" + currentColumn.name + "\" can not be null");
 					} else {
-						rawDataRow[currentColumn.name] = configuration.defaultvalue;
+						rawDataRow[currentColumn.name] = currentColumn.defaultvalue;
 					}
 				}
 			}
 		}
-		
+
 		if (debug) {
 			console.info(rawDataRow);
 		}
