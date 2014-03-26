@@ -249,12 +249,17 @@ function LocalDataStorage (configuration) {
 		
 		var rowList = getRowIndexListBySelector(selector);
 		var deletedRowCount = 0;
+		var currentDatabaseChangeVersion = 0;
 		
 		for (var i = 0; i < rowList.length; i++) {
 			var deletedRow = {};
 			
+			if (currentDatabaseChangeVersion === 0) {
+				currentDatabaseChangeVersion = this.getCurrentRowVersion(true);
+			}
+			
 			deletedRow.LDS_ROWGUID = rows[rowList[i]].LDS_ROWGUID;
-			deletedRow.LDS_ROWVERSION = this.getCurrentRowVersion(true);
+			deletedRow.LDS_ROWVERSION = currentDatabaseChangeVersion;
 			deletedRow.LDS_DELETED = true;
 			
 			rows[rowList[i]] = deletedRow;
