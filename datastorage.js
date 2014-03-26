@@ -8,6 +8,7 @@ function LocalDataStorage (configuration) {
 	var structure = [];
 	var rows = [];
 	var debug = false;
+	var databaseChangeVersion = 0;
 	
 	//GET
 	this.getId = function () {
@@ -200,6 +201,7 @@ function LocalDataStorage (configuration) {
 		
 		var rowList = getRowIndexListBySelector(selector);
 		var updatedRowCount = 0;
+		var currentDatabaseChangeVersion = 0;
 		
 		for (var i = 0; i < rowList.length; i++) {
 			var rowUpdated = false;
@@ -229,7 +231,11 @@ function LocalDataStorage (configuration) {
 			}
 			
 			if (rowUpdated) {
-				rows[rowList[i]].LDS_ROWVERSION = this.getCurrentRowVersion(true);
+				if (currentDatabaseChangeVersion === 0) {
+					currentDatabaseChangeVersion = this.getCurrentRowVersion(true);
+				}
+				
+				rows[rowList[i]].LDS_ROWVERSION = currentDatabaseChangeVersion;
 				updatedRowCount++;
 			}
 		}
@@ -311,9 +317,10 @@ function LocalDataStorage (configuration) {
 	this.getCurrentRowVersion = function (increase) {
 		//NOT YET IMPLEMENTED
 		if (increase) {
-			
+			return ++databaseChangeVersion;
+		} else {
+			return databaseChangeVersion;
 		}
-		return 0;
 	};
 	
 	this.createRowGuid = function guid() {
@@ -381,6 +388,9 @@ function LocalDataStorage (configuration) {
 			}
 			if ((configuration.debug !== undefined) && (configuration.debug !== null)) {
 				debug = configuration.debug;
+			}
+			if ((configuration.databasechangeversion !== undefined) && (configuration.databasechangeversion !== null)) {
+				databaseChangeVersion = configuration.databasechangeversion;
 			}
 		}
 		if (debug) {

@@ -30,8 +30,12 @@
 		db.addRow({id:++i, givenname:"Heinz", surname:"Hoffmann", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Gerhard", surname:"Schäfer", mail:"testmail." + i + "@example.org"});
 		
+		console.log(db.updateRow(function() { return true;}, {surname:"Krüger"}));
+		
 		console.log(db.select(null, [{name:"surname", direction:"ASC"}, {name:"givenname", direction:"ASC"}], 0));
 		console.log(db.select(null, {name:"mail", direction:"DESC"}, 0));
+		
+		console.log(db.select(function() { if (this.givenname==="Helmut") { return true;}}, null, 0));
 	</script>
 </head>
 <body>
