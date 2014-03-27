@@ -43,7 +43,13 @@ describe('LocalDataStorage', function(){
 		it('Column \"active\"\' defaultsvalue should be of \"true\"', function(){
 			assert.equal(true, db.getStructure()[8].defaultvalue);
 		});
-	}),
+	});
+	describe('#addColumn()', function(){
+		it('should add Column \"usertype\" with defaultvalue \"user\" to all existing rows', function(){
+			db.addColumn({name:"usertype", type:"string", nullable:false, defaultvalue:"user"});
+			assert.equal("user", db.select(null, null, 1)[0].usertype);
+		});
+	});
 	describe('#selectRow()', function(){
 		it('should return 10 objects when selecting without selector', function(){
 			assert.equal(11, db.select(null, null, 0).length);

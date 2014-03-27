@@ -39,21 +39,18 @@ function LocalDataStorage (configuration) {
 		}
 		
 		if ((configuration.name === undefined) || (configuration.name === null)) {
-			console.error("Column name can not be null");
-			return null;
+			throw new Error("Column name can not be null");
 		}
 		
 		if (configuration.name.substring(0,4) === "LDS_") {
-			console.error("Columnprefix \"LDS_\" is reserved for internal functions");
-			return null;
+			throw new Error("Columnprefix \"LDS_\" is reserved for internal functions");
 		}
 		
 		for (var i = 0; i < structure.length;i++) {
 			var currentColumn = structure[i];
 			
 			if (currentColumn.name === configuration.name) {
-				console.error("Column \"" + configuration.name + "\" already exists");
-				return null;
+				throw new Error("Column \"" + configuration.name + "\" already exists");
 			}
 		}
 		
@@ -62,8 +59,7 @@ function LocalDataStorage (configuration) {
 		}
 		
 		if ((configuration.type !== "string") && (configuration.type !== "number") && (configuration.type !== "boolean")) {
-			console.error("Column \"" + configuration.name + "\" does not support datatype \"" + configuration.type + "\"");
-			return null;
+			throw new Error("Column \"" + configuration.name + "\" does not support datatype \"" + configuration.type + "\"");
 		}
 		
 		if ((configuration.defaultvalue !== undefined) && (configuration.defaultvalue !== null)) {
@@ -87,8 +83,23 @@ function LocalDataStorage (configuration) {
 			configuration.nullable = true;
 		}
 		
+		if (rows.length > 0) {
+			if ((configuration.defaultvalue === null) && (!configuration.nullable)){
+				//error
+				throw new Error("Column \"" + configuration.name + "\" is not nullable, and defaultvalue is null.");
+			}
+		}
 		
 		structure.push({"name":configuration.name, "type": configuration.type, "defaultvalue":configuration.defaultvalue, "nullable":configuration.nullable});
+		
+		if (rows.length > 0) {
+			for (i = 0; i < rows.length; i++) {
+				if (!rows[i].LDS_DELETED) {
+					rows[i][configuration.name] = configuration.defaultvalue;
+				}
+			}
+		}
+		
 		if (debug) {
 			console.info("Column \"" + configuration.name + "\" with type \"" + configuration.type + "\" added successfully");
 		}
@@ -320,7 +331,6 @@ function LocalDataStorage (configuration) {
 	};
 	
 	this.getCurrentRowVersion = function (increase) {
-		//NOT YET IMPLEMENTED
 		if (increase) {
 			return ++databaseChangeVersion;
 		} else {
