@@ -3,24 +3,38 @@
 	<title>Dev Page for LocalDataStorage</title>
 	<script src="../../datastorage.js"></script>
 	<script type="text/javascript">
-		var db = new LocalDataStorage({debug:true});
+	var db = new LocalDataStorage({debug:false, enablepersistency:true, id:"users"});
 
+	
+	
+	if (!db.getPersistencyController().isDataLoadedSucessful()) {
 		//creating Structure
 		db.addColumn({name:"id", type:"number", nullable:false});
-		db.addColumn({name:"name", type:"string", nullable:true});
-		db.addColumn({name:"name2", type:"string", nullable:true});
-		db.addColumn({name:"visible", type:"boolean", nullable:false, defaultvalue:true});
-		
+		db.addColumn({name:"givenname", type:"string", nullable:true});
+		db.addColumn({name:"surname", type:"string", nullable:true});
+		db.addColumn({name:"mail", type:"string", nullable:false});
+		db.addColumn({name:"city", type:"string", nullable:true});
+		db.addColumn({name:"zipcode", type:"string", nullable:true});
+		db.addColumn({name:"street", type:"string", nullable:true});
+		db.addColumn({name:"houseno", type:"string", nullable:true});
+		db.addColumn({name:"active", type:"boolean", nullable:false, defaultvalue:true});
+
 		//add some rows
 		var i = 0;
-		db.addRow({id:i++, name:"Liehr", name2:"Sascha", visible:true});
-		db.addRow({id:i++, name:"Liehr", name2:"Dominik", visible:false});
-		//db.addRow({id:i, name:"test3", visible:true});
-		//db.addRow({id:i, name:"test2", visible:true});
-		//db.addRow({id:i, name:"test1", visible:"true"});
-		
-		console.log(db.select(null, [{name:"name", direction:"ASC"}, {name:"visible", direction:"ASC"}], 0));
-		console.log(db.select(null, {name:"name", direction:"DESC"}, 0));
+		db.addRow({id:++i, givenname:"Peter", surname:"Müller", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Wolfgang", surname:"Weber", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Michael", surname:"Schneider", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Werner", surname:"Fischer", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Klaus", surname:"Weber", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Thomas", surname:"Meyer", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Manfred", surname:"Wagner", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Helmut", surname:"Becker", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Jürgen", surname:"Schulz", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Heinz", surname:"Hoffmann", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Gerhard", surname:"Schäfer", mail:"testmail." + i + "@example.org"});
+	} 
+	
+
 	</script>
 </head>
 <body>

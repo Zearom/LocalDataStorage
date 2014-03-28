@@ -9,6 +9,7 @@ function LocalDataStorage (configuration) {
 	var rows = [];
 	var debug = false;
 	var databaseChangeVersion = 0;
+	var persistencyController = null;
 	
 	//GET
 	this.getId = function () {
@@ -25,6 +26,10 @@ function LocalDataStorage (configuration) {
 	
 	this.getRawRows = function () {
 		return rows;
+	};
+	
+	this.getPersistencyController = function () {
+		return persistencyController;
 	};
 
 	//SET
@@ -146,7 +151,16 @@ function LocalDataStorage (configuration) {
 		
 		rows.push(rawDataRow);
 		
-		return rawDataRow;
+	
+		try {
+			event("afterDataChanged", this);
+		} catch (ex) {
+			if (debug) {
+				console.error(ex.message);
+			}
+		}
+		
+		return true;
 	};
 	
 	/** Select-Function
@@ -250,6 +264,18 @@ function LocalDataStorage (configuration) {
 				updatedRowCount++;
 			}
 		}
+		
+		if (updatedRowCount > 0) {
+			try {
+				event("afterDataChanged", this);
+			} catch (ex) {
+				if (debug) {
+					console.error(ex.message);
+				}
+			}
+			
+		}
+		
 		return updatedRowCount;
 	};
 	
@@ -276,6 +302,17 @@ function LocalDataStorage (configuration) {
 			rows[rowList[i]] = deletedRow;
 			
 			deletedRowCount++;
+		}
+		
+		if (deletedRowCount > 0) {
+			try {
+				event("afterDataChanged", this);
+			} catch (ex) {
+				if (debug) {
+					console.error(ex.message);
+				}
+			}
+			
 		}
 		
 		return deletedRowCount;
@@ -395,6 +432,33 @@ function LocalDataStorage (configuration) {
 		}
 	}
 	
+	function event (eventname, scope) {
+		if ((scope === undefined) || (scope === null)) {
+			scope = this;
+		}
+		
+		var functionToCall = null;
+		
+		if (eventname === "afterDataChanged") {
+			if ((afterDataChanged !== null) && (afterDataChanged !== undefined)) {
+				functionToCall = afterDataChanged;
+			}
+		}
+		
+		functionToCall.call(scope);
+	}
+	
+	//EVENTS
+	function afterDataChanged () {
+		if (debug) {
+			console.log("Event afterDataChanged started");
+		}
+		
+		if (persistencyController) {
+			persistencyController.afterDataChanged(this);
+		}
+	}
+	
 	//INIT
 	this.initiate = function (configuration) {
 		if ((configuration !== undefined) && (configuration !== null)) {
@@ -407,9 +471,114 @@ function LocalDataStorage (configuration) {
 			if ((configuration.databasechangeversion !== undefined) && (configuration.databasechangeversion !== null)) {
 				databaseChangeVersion = configuration.databasechangeversion;
 			}
+			if ((configuration.enablepersistency !== undefined) && (configuration.enablepersistency !== null)) {
+				if (configuration.enablepersistency === true) {
+					persistencyController = new LocalStoragePersistencyController({debug:configuration.debug});
+				}
+			}
 		}
 		if (debug) {
 			console.info("LocalDataStorage.initiate()");
+		}
+		
+		if (persistencyController) {
+			try {
+				var savedData = persistencyController.onInitiate(this);
+				
+				rows = savedData.rows;
+				structure = savedData.structure;
+				databaseChangeVersion = savedData.databasechangeversion;
+				
+				
+			} catch (ex) {
+				if (debug) {
+					console.error(ex.message);
+				}
+			}
+		}
+	};
+	
+	this.initiate(configuration);
+}
+
+function LocalStoragePersistencyController (configuration) {
+	var ls = null;
+	var dataLoadedSucessful = false;
+	var debug = false;
+	
+	this.isDebug = function () {
+		return debug;
+	};
+	
+	this.setDebug = function (value) {
+		debug = value;
+	};
+	
+	this.isDataLoadedSucessful = function () {
+		return dataLoadedSucessful;
+	};
+	
+	this.onInitiate = function (database) {
+		console.log("LocalStoragePersistencyController.onInitiate");
+		var dbStructure;
+		var dbRows;
+		var dbSettings;
+		
+		//check localStorage-availability
+		if ((window.localStorage !== undefined) && (window.localStorage !== null)) {
+			ls = window.localStorage;
+		}
+		
+		var dbRawStructure = ls.getItem("LDS_" + database.getId() + "_STRUCTURE");
+		var dbRawRows = ls.getItem("LDS_" + database.getId() + "_ROWS");
+		var dbRawSettings = ls.getItem("LDS_" + database.getId() + "_SETTINGS");
+		
+		
+		
+		if ((dbRawStructure === null) || (dbRawRows === null) || (dbRawSettings === null)) {
+			throw new Error("Stored DB-Data are not available");
+		}
+		
+		try {
+			dbStructure = JSON.parse(dbRawStructure);
+			dbRows = JSON.parse(dbRawRows);
+			dbSettings = JSON.parse(dbRawSettings);
+		} catch (ex) {
+			throw new Error("Invalid Data - could not reinitialize DB Data");
+		}
+		
+		var databaseChangeVersion = dbSettings.databasechangeversion;
+		
+		
+		if (ls === null) {
+			return null;
+		} else {
+			dataLoadedSucessful = true;
+			return {
+				structure: dbStructure,
+				rows: dbRows,
+				databasechangeversion: databaseChangeVersion
+			};
+		}
+	};
+	
+	this.afterDataChanged = function (database) {
+		console.log("LocalStoragePersistencyController.afterDataChanged");
+		if (ls !== null) {
+			ls.setItem("LDS_" + database.getId() + "_STRUCTURE", JSON.stringify(database.getStructure()));
+			ls.setItem("LDS_" + database.getId() + "_ROWS", JSON.stringify(database.getRawRows()));
+			ls.setItem("LDS_" + database.getId() + "_SETTINGS", JSON.stringify({databasechangeversion: database.getCurrentRowVersion()}));
+			return true;
+		} else {
+			return false;
+		}
+	};
+	
+	this.initiate = function (configuration) {
+		if ((configuration !== undefined) && (configuration !== null)) {
+			if ((configuration.debug !== undefined) && (configuration.debug !== null)) {
+				debug = configuration.debug;
+			}
 		}
 	};
 	

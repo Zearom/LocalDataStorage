@@ -1,7 +1,7 @@
 var assert = require("assert");
 var LocalDataStorage = require("../../datastorage.module.min.js");
 
-var db = new LocalDataStorage({debug:false});
+var db = new LocalDataStorage({debug:false, enablepersistency:true});
 
 //creating Structure
 db.addColumn({name:"id", type:"number", nullable:false});
