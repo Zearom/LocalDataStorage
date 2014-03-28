@@ -169,8 +169,8 @@ function LocalDataStorage (configuration) {
 	 * @param {number} limit - limits the result-table
 	 * 
 	 * */
-	this.select = function (selector, sort, limit) {
-		return this.selectRow(selector, sort, limit);
+	this.select = function (selector, sort, limit, view) {
+		return this.selectRow(selector, sort, limit, view);
 	};
 	
 	this.selectRow = function (selector, sort, limit) {
@@ -179,8 +179,13 @@ function LocalDataStorage (configuration) {
 		
 		limit = limit || 0;
 		
+		//
+		if (view === undefined) {
+			view = null;
+		}
+		
 		//Selecting
-		var rowList = getRowIndexListBySelector(selector);
+		var rowList = getRowIndexListBySelector(selector, view);
 		
 		for (var i = 0; i < rowList.length; i++) {
 			tmpResultSet.push(rows[rowList[i]]);
@@ -503,7 +508,7 @@ function LocalDataStorage (configuration) {
 
 function LocalStoragePersistencyController (configuration) {
 	var ls = null;
-	var dataLoadedSucessful = false;
+	var dataLoadedSucessfully = false;
 	var debug = false;
 	
 	this.isDebug = function () {
@@ -514,12 +519,15 @@ function LocalStoragePersistencyController (configuration) {
 		debug = value;
 	};
 	
-	this.isDataLoadedSucessful = function () {
-		return dataLoadedSucessful;
+	this.isDataLoadedSucessfully = function () {
+		return dataLoadedSucessfully;
 	};
 	
 	this.onInitiate = function (database) {
-		console.log("LocalStoragePersistencyController.onInitiate");
+		if (debug) {
+			console.log("LocalStoragePersistencyController.onInitiate");
+		}
+		
 		var dbStructure;
 		var dbRows;
 		var dbSettings;
@@ -553,7 +561,7 @@ function LocalStoragePersistencyController (configuration) {
 		if (ls === null) {
 			return null;
 		} else {
-			dataLoadedSucessful = true;
+			dataLoadedSucessfully = true;
 			return {
 				structure: dbStructure,
 				rows: dbRows,
@@ -563,7 +571,10 @@ function LocalStoragePersistencyController (configuration) {
 	};
 	
 	this.afterDataChanged = function (database) {
-		console.log("LocalStoragePersistencyController.afterDataChanged");
+		if (debug) {
+			console.log("LocalStoragePersistencyController.afterDataChanged");
+		}
+		
 		if (ls !== null) {
 			ls.setItem("LDS_" + database.getId() + "_STRUCTURE", JSON.stringify(database.getStructure()));
 			ls.setItem("LDS_" + database.getId() + "_ROWS", JSON.stringify(database.getRawRows()));

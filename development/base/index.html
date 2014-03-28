@@ -7,7 +7,8 @@
 
 	
 	
-	if (!db.getPersistencyController().isDataLoadedSucessful()) {
+	if (!db.getPersistencyController().isDataLoadedSucessfully()) {
+		console.log("No db found, creating structure and filling data");
 		//creating Structure
 		db.addColumn({name:"id", type:"number", nullable:false});
 		db.addColumn({name:"givenname", type:"string", nullable:true});
