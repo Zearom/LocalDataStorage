@@ -1,11 +1,10 @@
 <html>
 <head>
 	<title>Dev Page for LocalDataStorage</title>
+	<meta charset="utf-8">
 	<script src="../../datastorage.js"></script>
 	<script type="text/javascript">
 	var db = new LocalDataStorage({debug:false, enablepersistency:true, id:"users"});
-
-	
 	
 	if (!db.getPersistencyController().isDataLoadedSucessfully()) {
 		console.log("No db found, creating structure and filling data");
@@ -22,7 +21,7 @@
 
 		//add some rows
 		var i = 0;
-		db.addRow({id:++i, givenname:"Peter", surname:"Müller", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"Peter", surname:"M√ºller", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Wolfgang", surname:"Weber", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Michael", surname:"Schneider", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Werner", surname:"Fischer", mail:"testmail." + i + "@example.org"});
@@ -30,11 +29,15 @@
 		db.addRow({id:++i, givenname:"Thomas", surname:"Meyer", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Manfred", surname:"Wagner", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Helmut", surname:"Becker", mail:"testmail." + i + "@example.org"});
-		db.addRow({id:++i, givenname:"Jürgen", surname:"Schulz", mail:"testmail." + i + "@example.org"});
+		db.addRow({id:++i, givenname:"J√ºrgen", surname:"Schulz", mail:"testmail." + i + "@example.org"});
 		db.addRow({id:++i, givenname:"Heinz", surname:"Hoffmann", mail:"testmail." + i + "@example.org"});
-		db.addRow({id:++i, givenname:"Gerhard", surname:"Schäfer", mail:"testmail." + i + "@example.org"});
-	} 
+		db.addRow({id:++i, givenname:"Gerhard", surname:"Sch√§fer", mail:"testmail." + i + "@example.org"});
+
+	}
 	
+	db.createView("all", function () { return true;});
+	db.createView("half", function () { if ((this.id % 2) === 0) {return true;} });
+	db.createView("otherhalf", function () { if ((this.id % 2) !== 0) {return true;} });
 
 	</script>
 </head>

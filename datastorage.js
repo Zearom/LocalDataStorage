@@ -10,6 +10,7 @@ function LocalDataStorage (configuration) {
 	var debug = false;
 	var databaseChangeVersion = 0;
 	var persistencyController = null;
+	var views = [];
 	
 	//GET
 	this.getId = function () {
@@ -149,9 +150,16 @@ function LocalDataStorage (configuration) {
 			console.info(rawDataRow);
 		}
 		
+		var newIndex = rows.length;
 		rows.push(rawDataRow);
 		
-	
+		//add to views?
+		for (var i = 0; i < views.length; i++) {
+			if (validateSelector(rows[newIndex], views[i].selector)) {
+				views[i].rowList.push(i);
+			} 
+		}
+
 		try {
 			event("afterDataChanged", this);
 		} catch (ex) {
@@ -173,7 +181,7 @@ function LocalDataStorage (configuration) {
 		return this.selectRow(selector, sort, limit, view);
 	};
 	
-	this.selectRow = function (selector, sort, limit) {
+	this.selectRow = function (selector, sort, limit, view) {
 		var resultSet = [];
 		var tmpResultSet = [];
 		
@@ -306,6 +314,22 @@ function LocalDataStorage (configuration) {
 			
 			rows[rowList[i]] = deletedRow;
 			
+			//views
+			//iterate through views
+			for (var j = 0; j < views.length; j++) {
+				if (views[j] !== null) {
+					//iterate through view-rows
+					currentviewloop:
+					for (var k = 0; k < views[j].rows.length; k++) {
+						if ( views[j].rows[k] = rowList[i]) {
+							//deleted rowIndex found - set to null
+							views[j].rows[k] = null;
+							break currentviewloop;
+						}
+					}
+				}
+			}
+			
 			deletedRowCount++;
 		}
 		
@@ -323,17 +347,33 @@ function LocalDataStorage (configuration) {
 		return deletedRowCount;
 	};
 	
-	function getRowIndexListBySelector(selector) {
+	function getRowIndexListBySelector(selector, view) {
 		var rowList = [];
 		
-		for (var i = 0; i < rows.length; i++) {
-			if (rows[i].LDS_DELETED === false) {
-				if (validateSelector(rows[i], selector)) {
-					rowList.push(i);
+		var viewIndexList = [];
+		
+		if ((view !== undefined) || (view !== null)) {
+			viewIndexList = getRowIndexListInView(view);
+		}
+		
+		
+		if (viewIndexList.length > 0) {
+			for (var i = 0; i < viewIndexList.length; i++) {
+				if (rows[viewIndexList[i]].LDS_DELETED === false) {
+					if (validateSelector(viewIndexList[i], selector)) {
+						rowList.push(viewIndexList[i]);
+					}
+				}
+			}	
+		} else {
+			for (var i = 0; i < rows.length; i++) {
+				if (rows[i].LDS_DELETED === false) {
+					if (validateSelector(rows[i], selector)) {
+						rowList.push(i);
+					}
 				}
 			}
 		}
-		
 		return rowList;
 	}
 	
@@ -386,6 +426,48 @@ function LocalDataStorage (configuration) {
 			return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
 		}
 		return _p8() + _p8(true) + _p8(true) + _p8();
+	};
+	
+	this.createView = function (viewName, viewSelector) {
+		for (var i = 0; i < views.length; i++) {
+			if (views[i] !== null) {
+				if (views[i].name === viewName) {
+					throw new Error("A view \"" + viewName + "\" already exists");
+				}
+			}
+		}
+		
+		views.push({
+			name: viewName,
+			selector: viewSelector,
+			rows: []
+		});
+		
+		return true;
+	};
+	
+	this.deleteView = function (viewName) {
+		for (var i = 0; i < views.length; i++) {
+			if (views[i] !== null) {
+				if (views[i].name === viewName) {
+					views[i] = null;
+					return true;
+				}
+			}
+		}
+	};
+	
+	this.rebuildView = function (viewName) {
+		for (var i = 0; i < views.length; i++) {
+			if (views[i] !== null) {
+				if (views[i].name === viewName) {
+					views[i].rows = getRowIndexListBySelector(views[i].selector);
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	};
 	
 	// Private functions
@@ -451,6 +533,18 @@ function LocalDataStorage (configuration) {
 		}
 		
 		functionToCall.call(scope);
+	}
+	
+	function getRowIndexListInView (viewName) {
+		for (var i = 0; i < views.length; i++) {
+			if (views[i] !== null) {
+				if (views[i].name === viewName) {
+					return views[i].rows;
+				}
+			}
+		}
+		
+		return [];
 	}
 	
 	//EVENTS
