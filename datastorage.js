@@ -1,3 +1,11 @@
+/*
+@license
+LocalDataStorage
+https://github.com/Zearom/LocalDataStorage
+Copyright (c) 2013-2014 Sascha Liehr, Liehr.IT <zearom@me.com>
+LocalDataStorage may be freely distributed under the MIT license.
+*/ 
+
 /**
  * Defines an instance of the LocalDataStorage Class.  
  * @constructor
