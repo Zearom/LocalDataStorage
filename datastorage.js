@@ -555,6 +555,12 @@ function LocalDataStorage (configuration) {
 		return [];
 	}
 	
+	function getValue(rowList, rowIndex, columnName) {
+		var columnIndex = columnName;
+
+		return rowList[rowIndex][columnIndex];
+	}
+	
 	//EVENTS
 	function afterDataChanged () {
 		if (debug) {
