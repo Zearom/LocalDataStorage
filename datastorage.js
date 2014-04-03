@@ -4,7 +4,7 @@ LocalDataStorage
 https://github.com/Zearom/LocalDataStorage
 Copyright (c) 2013-2014 Sascha Liehr, Liehr.IT <zearom@me.com>
 LocalDataStorage may be freely distributed under the MIT license.
-*/ 
+*/
 
 /**
  * Defines an instance of the LocalDataStorage Class.  
@@ -162,10 +162,10 @@ function LocalDataStorage (configuration) {
 		rows.push(rawDataRow);
 		
 		//add to views?
-		for (var i = 0; i < views.length; i++) {
-			if (validateSelector(rows[newIndex], views[i].selector)) {
-				views[i].rowList.push(i);
-			} 
+		for (var j = 0; j < views.length; j++) {
+			if (validateSelector(rows[newIndex], views[j].selector)) {
+				views[j].rows.push(newIndex);
+			}
 		}
 
 		try {
@@ -282,6 +282,33 @@ function LocalDataStorage (configuration) {
 				}
 				
 				rows[rowList[i]].LDS_ROWVERSION = currentDatabaseChangeVersion;
+				
+				//View-Update
+				viewIteration:
+				for (var l = 0; l < views.length; l++) {
+					var shouldBeInView = validateSelector(rows[rowList[i]], views[l].selector);
+					var rowExistsInView = false;
+					var pos = null;
+					
+					//iterate through view
+					viewIndexListIteration:
+					for (var k = 0; k < views[l].rows.length;k++) {
+						if (views[l].rows[k] === rowList[i]) {
+							rowExistsInView = true;
+							pos = k;
+							break viewIndexListIteration;
+						}
+					}
+					//change if needed
+					if (shouldBeInView && !rowExistsInView) {
+						//add to view
+						views[l].rows.push(rowList[i]);
+					} else if (!shouldBeInView && rowExistsInView) {
+						//remove from view
+						views[l].rows[pos] = null;
+					}
+				}
+				
 				updatedRowCount++;
 			}
 		}
@@ -329,7 +356,7 @@ function LocalDataStorage (configuration) {
 					//iterate through view-rows
 					currentviewloop:
 					for (var k = 0; k < views[j].rows.length; k++) {
-						if ( views[j].rows[k] = rowList[i]) {
+						if ( views[j].rows[k] === rowList[i]) {
 							//deleted rowIndex found - set to null
 							views[j].rows[k] = null;
 							break currentviewloop;
@@ -372,12 +399,12 @@ function LocalDataStorage (configuration) {
 						rowList.push(viewIndexList[i]);
 					}
 				}
-			}	
+			}
 		} else {
-			for (var i = 0; i < rows.length; i++) {
-				if (rows[i].LDS_DELETED === false) {
-					if (validateSelector(rows[i], selector)) {
-						rowList.push(i);
+			for (var j = 0; j < rows.length; j++) {
+				if (rows[j].LDS_DELETED === false) {
+					if (validateSelector(rows[j], selector)) {
+						rowList.push(j);
 					}
 				}
 			}
