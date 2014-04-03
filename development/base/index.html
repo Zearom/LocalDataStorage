@@ -38,6 +38,13 @@
 	db.createView("all", function () { return true;});
 	db.createView("half", function () { if ((this.id % 2) === 0) {return true;} });
 	db.createView("otherhalf", function () { if ((this.id % 2) !== 0) {return true;} });
+	db.createView("sascha", function () { if ((this.givenname === "Sascha")) {return true;} });
+	db.rebuildView("half");
+	db.rebuildView("otherhalf");
+	db.rebuildView("sascha");
+	
+	db.update(function () {return true;}, {givenname:"Sascha"});
+	
 
 	</script>
 </head>
