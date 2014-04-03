@@ -463,7 +463,7 @@ function LocalDataStorage (configuration) {
 		return _p8() + _p8(true) + _p8(true) + _p8();
 	};
 	
-	this.createView = function (viewName, viewSelector) {
+	this.createView = function (viewName, viewSelector, disableRebuild) {
 		for (var i = 0; i < views.length; i++) {
 			if (views[i] !== null) {
 				if (views[i].name === viewName) {
@@ -477,6 +477,10 @@ function LocalDataStorage (configuration) {
 			selector: viewSelector,
 			rows: []
 		});
+		
+		if (!(disableRebuild === true)) {
+			this.rebuildView(viewName);
+		}
 		
 		return true;
 	};
