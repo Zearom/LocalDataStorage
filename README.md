@@ -10,7 +10,9 @@ This library is currently under heavy development, and not ready for productive 
 * Milestone 1: Completing the documentation
 * Milestone 2: Changing the row-storage to an array-based system for performance and filesize optimizing
 * Milestone 3: Completing the testsuite powered by mocha
+
 --> Release 1
+
 * Milestone 4: add/select/update/delete functions should be run asynchronous on demand 
 * Milestone 5: Restore/Store views from/to persistency-controller
 * Milestone 6: API for remote synchronization
