@@ -1,3 +1,78 @@
-<h1>LocalDataStorage</h1>
+<h1>LocalDataStorage.js</h1>
 
-<p>This is a javascript-based database library, with inbuilt support for LocalStorage und Syncronizing with remote APIs.</p>
+<p>This is a ECMAScript-based persistence library, with support for localStorage (http://www.w3.org/TR/webstorage/#storage).</p>
+
+<h2>Development state</h2>
+
+<p>This library is currently under heavy development, and not ready for productive use. For the first release i want to reach the following milestones</p>
+
+<ul>
+<li>Milestone 1: Completing the documentation</li>
+<li>Milestone 2: Changing the row-storage to an array-based system for performance and filesize optimizing</li>
+<li>Milestone 3: Completing the testsuite powered by mocha
+&ndash;> Release 1</li>
+<li>Milestone 4: add/select/update/delete functions should be run asynchronous on demand</li>
+<li>Milestone 5: Restore/Store views from/to persistency-controller</li>
+<li>Milestone 6: API for remote synchronization</li>
+</ul>
+
+
+<h2>Getting started</h2>
+
+<p>LocalDataStorage.js is really easy to use. Include the LocalDataStorage.min.js and you can start with the following example.</p>
+
+<p>```javascript</p>
+
+<p>// initialize the LocalDataStorage object
+var db = new LocalDataStorage({id:&ldquo;users&rdquo;});</p>
+
+<p>// creating the structure
+db.addColumn({name:&ldquo;id&rdquo;, type:&ldquo;number&rdquo;, nullable:false});
+db.addColumn({name:&ldquo;givenname&rdquo;, type:&ldquo;string&rdquo;, nullable:true});
+db.addColumn({name:&ldquo;surname&rdquo;, type:&ldquo;string&rdquo;, nullable:true});
+db.addColumn({name:&ldquo;mail&rdquo;, type:&ldquo;string&rdquo;, nullable:false});</p>
+
+<p>//add some rows
+var i = 0;
+db.addRow({id:++i, givenname:&ldquo;Peter&rdquo;, surname:&ldquo;Müller&rdquo;, mail:&ldquo;testmail.&rdquo; + i + &ldquo;@example.org&rdquo;});
+db.addRow({id:++i, givenname:&ldquo;Wolfgang&rdquo;, surname:&ldquo;Weber&rdquo;, mail:&ldquo;testmail.&rdquo; + i + &ldquo;@example.org&rdquo;});
+db.addRow({id:++i, givenname:&ldquo;Michael&rdquo;, surname:&ldquo;Schneider&rdquo;, mail:&ldquo;doesnotexists.&rdquo; + i + &ldquo;@example.org&rdquo;});
+db.addRow({id:++i, givenname:&ldquo;Werner&rdquo;, surname:&ldquo;Fischer&rdquo;, mail:&ldquo;testmail.&rdquo; + i + &ldquo;@example.org&rdquo;});
+```</p>
+
+<p>Now we create a database with structure and content, so we can now query:</p>
+
+<p>```javascript
+var results = db.selectRow(function () {
+    if (this.givenname === &ldquo;Michael&rdquo;) {
+        return true;
+    }
+});</p>
+
+<p>for (var i = 0; i &lt; results.length; i++) {
+    console.log(&ldquo;Michaels mail-adress is \&rdquo;&ldquo; + results[i].mail + &rdquo;\&ldquo;&rdquo;);
+}
+```</p>
+
+<p>Oooh! I made a mistake with michaels mail-address. So now we want to update my mistake:</p>
+
+<p>```javascript</p>
+
+<p>db.update(function () {
+    if (this.givenname === &ldquo;Michael&rdquo;) {
+        return true;
+    }
+}, {mail:&ldquo;michael.schneider@example.org&rdquo;});</p>
+
+<p>```</p>
+
+<p>Ok! Now its time to delete data:</p>
+
+<p>```javascript</p>
+
+<p>db.delete(function () {
+    if (this.givenname === &ldquo;Werner&rdquo;) {
+        return true;
+    }
+});
+```</p>
